@@ -1,2 +1,4 @@
-# echo_server
-Sockets work for distributed system.
+# Echo Server
+> Distributed Systems - CS4032
+
+#### Run Program
