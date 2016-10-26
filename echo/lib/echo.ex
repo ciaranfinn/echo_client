@@ -4,36 +4,40 @@
 defmodule Echo do
 
   def main(args) do
-    args |> get_args |> open_tcp
+    args |> get_args |> open_socket
   end
 
   defp get_args(args) do
     {arguments,_,_} = OptionParser.parse(args,
       switches: [endpoint: :string, message: :string]
     )
-    arguments
+    case arguments do
+      [{:endpoint, _},{:message, _}] ->
+        arguments
+      _ -> IO.puts "Please provide arguments as followes: --endpoint 'localhost:8000' --message 'hello'"
+        System.halt(0)
+    end
   end
 
-  defp open_tcp(arguments) do
+  defp open_socket(arguments) do
     [host,port] = Regex.split(~r/:/, arguments[:endpoint])
     host = String.to_char_list(host)
 
     case Integer.parse(port) do
       {port, _ } ->
-         connection(arguments,port,host)
+         establish_connection(arguments,port,host)
       :error ->
-        IO.puts "There Was An Issue With The Port You Provided"
+        IO.puts "There was an issue with the port you provided"
     end
   end
 
-  defp connection(arguments,port,host) do
-
+  defp establish_connection(arguments,port,host) do
     options = [:binary, {:active, false}]
     case :gen_tcp.connect(host, port, options) do
       {:ok, socket} ->
         send_data(socket,arguments)
-      {:error, _reason} ->
-        IO.puts "TCP Connection Error: #{_reason}"
+      {:error, reason} ->
+        IO.puts "TCP connection error: #{reason}"
     end
   end
 
@@ -44,8 +48,8 @@ defmodule Echo do
     case :gen_tcp.send(socket, request) do
       :ok ->
         receive_data(socket)
-      {:error, _reason} ->
-        IO.puts "Error Sending Data: #{_reason}"
+      {:error, reason} ->
+        IO.puts "Error sending data: #{reason}"
     end
   end
 
@@ -53,11 +57,10 @@ defmodule Echo do
     case :gen_tcp.recv(socket, 0) do
       {:ok, packet} ->
         IO.puts packet
-      {:error, _reason} ->
-        IO.puts "Error Receiving Data: #{_reason}"
+      {:error, reason} ->
+        IO.puts "Error receiving data: #{reason}"
     end
-
-    :gen_tcp.close(socket)
+    :gen_tcp.close socket
   end
 
 end
