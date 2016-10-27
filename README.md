@@ -1,4 +1,4 @@
-# Echo Server
+# Echo Client
 > Distributed Systems
 
 #### Run The PHP Echo Server
