@@ -9,19 +9,20 @@ defmodule Echo do
 
   defp get_args(args) do
     {arguments,_,_} = OptionParser.parse(args,
-      switches: [endpoint: :string, message: :string]
+      switches: [host: :string, port: :string, path: :string, message: :string]
     )
     case arguments do
-      [{:endpoint, _},{:message, _}] ->
+      [{:host, _},{:port, _},{:path, _},{:message, _}] ->
         arguments
-      _ -> IO.puts "Please provide arguments as followes: --endpoint 'localhost:8000' --message 'hello'"
+      _ ->
+        IO.puts "Example Format: --host 'localhost' --port '8000' --path '/echo.php?message=' --message 'hello'"
         System.halt(0)
     end
   end
 
   defp open_socket(arguments) do
-    [host,port] = Regex.split(~r/:/, arguments[:endpoint])
-    host = String.to_char_list(host)
+    host = String.to_char_list(arguments[:host])
+    port = arguments[:port]
 
     case Integer.parse(port) do
       {port, _ } ->
@@ -42,8 +43,11 @@ defmodule Echo do
   end
 
   defp send_data(socket,arguments) do
+    path = arguments[:path]
+    
+    # Ensure text is transmited in URL string
     message = URI.encode_www_form(arguments[:message])
-    request = "GET /echo.php?message=#{message} HTTP/1.0\r\n\r\n"
+    request = "GET #{path}#{message} HTTP/1.0\r\n\r\n"
 
     case :gen_tcp.send(socket, request) do
       :ok ->

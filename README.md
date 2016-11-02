@@ -10,4 +10,4 @@
 `mix escript.build`
 
 #### Run Client
-`./echo --endpoint "localhost:8000" --message "hello world"`
+`./echo --host "localhost" --port "8000" --path "/echo.php" --message "hello world"`
